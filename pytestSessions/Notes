@@ -1,0 +1,8 @@
+py.test -k login -v  -- run with keyword of test function
+
+py.test -n -5  -- to run tests parallely
+
+pytest .\test_google.py -v -s --html=google_test_report.html  --  To get html report
+
+
+

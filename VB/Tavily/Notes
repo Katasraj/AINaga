@@ -1,0 +1,28 @@
+What Tavily is used for
+
+Tavily is not an LLM provider.
+
+It is a search engine API used to:
+
+Search the web
+Retrieve web content
+Build AI agents
+Use RAG pipelines
+
+Example:
+
+User question
+      ↓
+Tavily searches the web
+      ↓
+Returns relevant documents
+      ↓
+LLM analyzes the results
+
+########################################################################################################################
+
+NVIDIA Nemotron does not necessarily support every modern LangChain tool-calling/agent feature through OpenRouter.
+That depends on the model/provider's supported capabilities
+
+########################################################################################################################
+

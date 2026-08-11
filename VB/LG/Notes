@@ -1,0 +1,31 @@
+LangGraph helps to build workflows for LLM applications
+------------------------------------------------------------------------------------------------------------------------
+Why not just use LangChain?
+
+This is an important question.
+
+Think of it like this:
+
+LangChain gives you components:
+
+LLM
+Tools
+Retriever
+Prompt
+Chains
+
+LangGraph lets you connect those components into a controlled workflow:
+
+         ┌── Tool 1 ──┐
+         │            │
+LLM ─────┼── Tool 2 ──┼── LLM ── Answer
+         │            │
+         └── RAG ─────┘
+
+
+LangChain gives you the building blocks.
+
+LangGraph lets you connect those blocks into a stateful workflow/agent with branching and loops.
+
+
+
