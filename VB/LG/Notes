@@ -26,6 +26,43 @@ LLM ─────┼── Tool 2 ──┼── LLM ── Answer
 LangChain gives you the building blocks.
 
 LangGraph lets you connect those blocks into a stateful workflow/agent with branching and loops.
+-----------------------------------------------------------------------------------------------------------------------
+🎒 MessageGraph
+
+You have one big pocket:
+
+Bag
+│
+└── Messages
+     ├── Question
+     ├── Answer
+     ├── Review
+     └── Answer
+
+Everything gets thrown into the same pocket.
+
+🎒 StateGraph
+
+You have separate pockets:
+
+Bag
+│
+├── Question
+├── Answer
+├── Review
+├── Documents
+└── Attempts
+
+You can directly say:
+
+Give me the Review.
+
+instead of:
+
+Give me the last message and hopefully it's the review.
+------------------------------------------------------------------------------------------------------------------------
+
+
 
 
 
