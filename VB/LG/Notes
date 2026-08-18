@@ -61,6 +61,10 @@ instead of:
 
 Give me the last message and hopefully it's the review.
 ------------------------------------------------------------------------------------------------------------------------
+MessagesState is not a list. Internally it is essentially a state dictionary containing a messages field.
+
+------------------------------------------------------------------------------------------------------------------------
+
 
 
 
