@@ -1,0 +1,20 @@
+Automatic Waiting Mechanism: Playwright automatically waits for elements to be actionable, reducing test
+      flakiness and avoiding manual wait commands
+
+Python: tells the computer what to do.
+
+YAML: tells the application what configuration/data to use.
+
+PyTest Fixtures: Fixtures provides the way to create reusable setup code so that we can share the reusable 
+      code across multiple test cases
+
+module: In Pytest Fixture if the scope=module, it will run only once for entire test file
+function: In Pytest Fixture if the scope=function, it will run everytime when it found linkage
+session: In Pytest Fixture if the scope=session, it will run only once for entire session
+
+headles: By defauly playwright execute test cases in headless mode only
+
+
+
+
+
