@@ -1,0 +1,21 @@
+Available models:
+    openai/gpt-oss-20b
+    openai/gpt-oss-120b
+    qwen/qwen3.6-27b
+
+--------------------------------------------------------------------------------------------------------------
+Is openai/gpt-oss-20b a Groq model?
+
+Not exactly, prefix is essentially telling you who the model comes from.
+
+This distinction is important.
+
+openai/gpt-oss-20b means:
+
+openai       → model developer
+gpt-oss-20b  → model name
+
+Groq provides the infrastructure/API to run that model.
+
+Similarly, Groq can provide access to models developed by Meta, Qwen, OpenAI, etc.
+

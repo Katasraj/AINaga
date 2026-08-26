@@ -14,6 +14,11 @@ session: In Pytest Fixture if the scope=session, it will run only once for entir
 
 headles: By defauly playwright execute test cases in headless mode only
 
+css selector: #id, .classname
+
+new_context: The new_context() method initializes a new browser context, allowing for isolation of various
+            testing scenarios like cookies, storage etc,It does not perform any actions involving or closing
+
 
 
 
