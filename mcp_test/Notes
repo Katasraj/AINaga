@@ -1,0 +1,567 @@
+MCP — Notes from Our Playwright + Nemotron Setup
+1. What is MCP?
+
+MCP = Model Context Protocol
+
+MCP is a standard way for an AI model to communicate with external tools and systems.
+
+Simple idea:
+
+LLM
+ ↓
+MCP Client
+ ↓
+MCP Server
+ ↓
+External Tool
+
+For our case:
+
+Nemotron
+   ↓
+MCP Client
+   ↓
+Playwright MCP
+   ↓
+Playwright
+   ↓
+Browser
+2. MCP Server vs MCP Client
+MCP Server
+
+Provides tools to the AI.
+
+In our case:
+
+Playwright MCP
+
+It provides browser tools such as:
+
+browser_navigate
+browser_snapshot
+browser_click
+browser_type
+browser_fill_form
+browser_tabs
+browser_take_screenshot
+...
+MCP Client
+
+Connects to the MCP server and calls those tools.
+
+We created our own Python MCP client using the MCP Python SDK.
+
+3. What we installed
+Node.js
+
+We checked:
+
+node --version
+
+Result:
+
+v24.19.0
+
+This is suitable for Playwright MCP.
+
+Playwright MCP
+
+Initially:
+
+npx @playwright/mcp@latest
+
+was taking too long.
+
+We tested npm:
+
+npm ping
+
+Result:
+
+PONG 323ms
+
+Then:
+
+npm view @playwright/mcp version
+
+Result:
+
+0.0.80
+
+So npm connectivity was working.
+
+Instead of npx, we installed it globally:
+
+npm install -g @playwright/mcp
+
+Installation succeeded.
+
+4. Verify Playwright MCP
+
+We ran:
+
+playwright-mcp --help
+
+This confirmed that the Playwright MCP server was installed.
+
+5. Python MCP SDK
+
+Inside our Python .venv, we installed:
+
+pip install "mcp[cli]"
+
+and:
+
+pip install openai python-dotenv
+
+Purpose:
+
+mcp
+    → communicate with MCP servers
+
+openai
+    → communicate with OpenRouter's OpenAI-compatible API
+
+python-dotenv
+    → read API key from .env
+6. Our first MCP Client
+
+We created:
+
+Next/
+│
+├── mcp_test/
+│   └── mcp_client.py
+│
+└── RS/
+    └── Playwright_23AUG/
+
+The client connects to:
+
+StdioServerParameters(
+    command="playwright-mcp",
+    args=[]
+)
+
+Then:
+
+await session.initialize()
+
+initializes the MCP connection.
+
+Then:
+
+response = await session.list_tools()
+
+retrieves the tools provided by Playwright MCP.
+
+We successfully received:
+
+browser_navigate
+browser_snapshot
+browser_click
+browser_type
+browser_find
+browser_tabs
+browser_take_screenshot
+...
+
+This proved:
+
+Python
+  ↓
+MCP Client
+  ↓
+Playwright MCP
+
+was working.
+
+7. We then connected Nemotron
+
+Our model is:
+
+nvidia/nemotron-3-ultra-550b-a55b:free
+
+through:
+
+OpenRouter
+
+Our architecture became:
+
+                    ┌───────────────────┐
+                    │ Nemotron 3 Ultra  │
+                    └─────────┬─────────┘
+                              │
+                         OpenRouter
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │ Python MCP Client │
+                    └─────────┬─────────┘
+                              │
+                         MCP Protocol
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │  Playwright MCP   │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                           Browser
+8. What is Tool Calling here?
+
+Nemotron doesn't directly control Chrome.
+
+Instead, Nemotron decides:
+
+Which tool should I use?
+
+For example:
+
+browser_navigate
+
+or:
+
+browser_click
+
+or:
+
+browser_snapshot
+
+Our Python MCP client receives that decision and calls the corresponding MCP tool.
+
+So:
+
+Nemotron
+   ↓
+"I want browser_click"
+   ↓
+MCP Client
+   ↓
+Playwright MCP
+   ↓
+Browser click
+9. Our Successful Test
+
+We gave Nemotron this task:
+
+Open https://rahulshettyacademy.com/loginpagePractise/
+and click the blinking text link.
+
+Nemotron dynamically performed:
+
+browser_navigate
+        ↓
+browser_snapshot
+        ↓
+browser_find
+        ↓
+browser_click
+        ↓
+browser_tabs
+        ↓
+browser_tabs
+
+It found:
+
+Free Access to InterviewQues/ResumeAssistance/Material link
+
+and clicked it.
+
+The link opened a new tab:
+
+https://rahulshettyacademy.com/documents-request
+
+Nemotron recognized the new tab and selected it.
+
+This confirms that our complete MCP + LLM + browser flow is working.
+
+10. Traditional Playwright vs MCP
+Traditional Playwright
+
+We write the exact automation:
+
+page.goto(url)
+
+page.locator(".blinkingText").first.click()
+
+We decide:
+
+URL
+Locator
+Index
+Action
+MCP + AI
+
+We give the AI an objective:
+
+Open the website and click the blinking text.
+
+Nemotron decides:
+
+Navigate
+   ↓
+Inspect page
+   ↓
+Find element
+   ↓
+Click element
+
+So:
+
+Traditional:
+Human → writes automation → Playwright → Browser
+
+MCP:
+Human → gives objective → AI → MCP → Playwright → Browser
+11. Our Existing Playwright Framework
+
+We deliberately did not modify your existing framework yet.
+
+Your existing project is:
+
+RS/
+└── Playwright_23AUG/
+    ├── data/
+    ├── pageObjects/
+    ├── pytest/
+    ├── utils/
+    ├── conftest.py
+    ├── test_*.py
+    └── ...
+
+We kept MCP separately:
+
+Next/
+├── mcp_test/
+│   ├── mcp_client.py
+│   └── nemotron_playwright.py
+│
+└── RS/
+    └── Playwright_23AUG/
+        └── existing framework
+
+This is good for learning because we aren't mixing:
+
+pytest
+Playwright
+Page Objects
+MCP
+Agents
+LLM
+
+all at once.
+
+12. Important Concept to Remember
+
+MCP itself is not an AI model.
+
+Nemotron = LLM / Brain
+MCP = Standard communication protocol
+Playwright MCP = MCP server providing browser tools
+Playwright = Browser automation technology
+Chrome = Browser
+
+Think of it like:
+
+             BRAIN
+            Nemotron
+               │
+               │ "click this"
+               ▼
+          MCP CLIENT
+               │
+               │ MCP
+               ▼
+        PLAYWRIGHT MCP
+               │
+               ▼
+          PLAYWRIGHT
+               │
+               ▼
+            CHROME
+13. Where we are now
+
+✅ Node.js installed
+✅ Playwright MCP installed
+✅ Python MCP SDK installed
+✅ Python connected to Playwright MCP
+✅ Playwright MCP tools discovered
+✅ OpenRouter configured
+✅ Nemotron connected
+✅ Nemotron successfully called MCP tools
+✅ Browser successfully controlled by Nemotron
+✅ New-tab handling successfully demonstrated
+
+Next learning step
+
+The next useful experiment is:
+
+Give Nemotron a more complex browser task
+        ↓
+login
+        ↓
+fill username/password
+        ↓
+select dropdown
+        ↓
+click button
+        ↓
+verify result
+
+After that, we can explore how MCP can work alongside your existing pytest + Page Object Playwright framework.
+
+Key one-line takeaway:
+
+MCP allows an LLM such as Nemotron to use external tools such as Playwright through a standardized interface.
+
+##############################################################################################################
+
+Nemotron
+   ↓
+decides which tool
+   ↓
+nemotron_playwright.py
+   ↓
+calls MCP tool
+   ↓
+Playwright MCP
+   ↓
+Browser
+
+##############################################################################################################
+
+1. nemotron_playwright.py = MCP Client
+
+Yes.
+
+This is your Python code.
+
+It does roughly this:
+
+nemotron_playwright.py
+        │
+        ├── talks to Nemotron through OpenRouter
+        │
+        └── connects to Playwright MCP
+
+In your code, this is the important part:
+
+server_params = StdioServerParameters(
+    command="playwright-mcp",
+    args=[]
+)
+
+That tells your Python MCP client:
+
+"Start the Playwright MCP server."
+
+2. Playwright MCP = MCP Server
+
+It is not a file that you created.
+
+When you installed:
+
+npm install -g @playwright/mcp
+
+you installed the Playwright MCP server package.
+
+The command:
+
+playwright-mcp
+
+starts that server.
+
+Conceptually:
+
+npm package
+@playwright/mcp
+       │
+       ▼
+playwright-mcp
+       │
+       ▼
+MCP Server
+       │
+       ├── browser_navigate
+       ├── browser_click
+       ├── browser_snapshot
+       ├── browser_type
+       ├── browser_tabs
+       └── ...
+
+You don't normally edit the Playwright MCP source code.
+
+3. So your complete setup is
+                 ┌─────────────────────┐
+                 │      Nemotron       │
+                 │       LLM           │
+                 └──────────┬──────────┘
+                            │
+                     OpenRouter API
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │ nemotron_playwright │
+                 │     .py             │
+                 │                     │
+                 │    MCP CLIENT       │
+                 └──────────┬──────────┘
+                            │
+                       MCP Protocol
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │   Playwright MCP    │
+                 │     MCP SERVER      │
+                 │                     │
+                 │ browser_click       │
+                 │ browser_navigate    │
+                 │ browser_snapshot    │
+                 │ etc.                │
+                 └──────────┬──────────┘
+                            │
+                            ▼
+                       Playwright
+                            │
+                            ▼
+                         Chrome
+4. Very simple analogy
+
+Think of a restaurant:
+
+Nemotron
+   ↓
+Customer
+nemotron_playwright.py
+   ↓
+Waiter
+Playwright MCP
+   ↓
+Kitchen / service system
+Playwright + Chrome
+   ↓
+Actual work
+
+The MCP Client asks the MCP Server to perform a particular tool operation.
+
+So when Nemotron said:
+
+browser_click
+
+your nemotron_playwright.py received that tool call and sent it to the Playwright MCP server, which then performed the browser action.
+
+The key distinction to remember
+Component	What it is
+Nemotron	LLM / AI brain
+OpenRouter	API provider/gateway
+nemotron_playwright.py	Your MCP Client
+@playwright/mcp	Playwright MCP package/server
+playwright-mcp	Command used to start the MCP server
+browser_click	MCP tool provided by Playwright MCP
+Playwright	Browser automation library
+Chrome	Actual browser
+
+So when we say "Nemotron is using Playwright MCP", it means:
+
+Nemotron → your MCP Client → Playwright MCP Server → browser tool → Chrome.
